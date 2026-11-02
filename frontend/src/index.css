@@ -1,0 +1,137 @@
+@import 'tailwindcss';
+
+/*
+ * Warm Sage design system (PRD §12): calm cream canvas, deep sage primary,
+ * forest teal accent. Contrast targets: body text >= 7:1 on cream, interactive
+ * colour >= 4.5:1, focus ring >= 3:1 against both cream and sage surfaces.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Canvas — calm cream */
+  --color-cream-50: #fdfbf6;
+  --color-cream-100: #f8f4ea;
+  --color-cream-200: #efe8d8;
+  --color-cream-300: #e0d7c2;
+
+  /* Primary — deep sage */
+  --color-sage-50: #f3f6f2;
+  --color-sage-100: #e3eae0;
+  --color-sage-200: #c6d4c0;
+  --color-sage-300: #a3b89b;
+  --color-sage-400: #7c9773;
+  --color-sage-500: #5c7a52;
+  --color-sage-600: #46613e;
+  --color-sage-700: #364c31;
+  --color-sage-800: #273724;
+  --color-sage-900: #1a2518;
+
+  /* Accent — forest teal */
+  --color-teal-50: #eef6f4;
+  --color-teal-100: #d6eae6;
+  --color-teal-200: #add5ce;
+  --color-teal-300: #7dbab0;
+  --color-teal-400: #4a968b;
+  --color-teal-500: #2c7a6f;
+  --color-teal-600: #1f6259;
+  --color-teal-700: #184c45;
+  --color-teal-800: #123a35;
+  --color-teal-900: #0c2a26;
+
+  /* Text */
+  --color-ink-500: #5a5a52;
+  --color-ink-700: #35352f;
+  --color-ink-900: #1e1e1a;
+
+  /* Status */
+  --color-danger-50: #fdf0ee;
+  --color-danger-100: #fbe0dc;
+  --color-danger-200: #f3bdb5;
+  --color-danger-500: #9d2f25;
+  --color-danger-600: #85241c;
+  --color-danger-700: #6b1c16;
+  --color-warn-50: #fdf6e7;
+  --color-warn-100: #f9ebcd;
+  --color-warn-200: #edd39c;
+  --color-warn-500: #8a5a00;
+  --color-warn-600: #6f4800;
+  --color-ok-50: #eef5ed;
+  --color-ok-100: #dcebda;
+  --color-ok-500: #2f6b39;
+  --color-ok-600: #24552d;
+
+  --radius-card: 0.875rem;
+  --shadow-card: 0 1px 2px rgb(30 30 26 / 6%), 0 8px 24px -16px rgb(30 30 26 / 18%);
+}
+
+@layer base {
+  html {
+    /* Slightly larger baseline: the same dashboard serves seniors and caregivers. */
+    font-size: 17px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-cream-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus is always visible, never removed. */
+  :focus-visible {
+    outline: 3px solid var(--color-teal-600);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Keyboard users get the ring even on elements that suppress outlines. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 3px solid var(--color-teal-600);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: var(--color-ink-900);
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  ::placeholder {
+    color: var(--color-ink-500);
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Screen-reader-only helper that can still receive programmatic focus. */
+  .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}

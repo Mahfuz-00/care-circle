@@ -1,0 +1,45 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# PHP / Laravel
+backend/vendor/
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/bootstrap/cache/*.php
+.phpunit.result.cache
+.phpunit.cache/
+
+# Flutter / Dart
+mobile-app/.dart_tool/
+mobile-app/.flutter-plugins
+mobile-app/.flutter-plugins-dependencies
+mobile-app/build/
+mobile-app/.idea/
+mobile-app/android/.gradle/
+mobile-app/ios/Pods/
+mobile-app/ios/.symlinks/
+*.iml
+
+# Command Code
+.commandcode/scratchpad/
+.commandcode/taste/
