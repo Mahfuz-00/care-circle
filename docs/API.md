@@ -8,6 +8,11 @@ When omitted, the acting user's first active circle is used.
 
 ## `/api/v1` — dashboard surface (ability `dashboard`)
 
+### Public
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/plans` | the plan catalogue (PRD §8). **No token required** — this is the pricing the marketing page renders, read from the `plans` table so it cannot drift from the enforced limits. Exposes no tenant data. |
+
 ### Auth
 | Method | Path | Notes |
 |---|---|---|

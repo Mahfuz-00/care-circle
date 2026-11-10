@@ -233,4 +233,13 @@ abstract final class AppTheme {
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(color: AppColors.border),
       );
+
+  /// Tabular (fixed-width) figures for quantities, times and day counts.
+  ///
+  /// A number whose glyphs change width shifts the text around it every time the
+  /// value changes — noticeable while a timer or a count updates. Prose keeps
+  /// proportional figures; only numeric values take this.
+  static TextStyle? tabular(TextStyle? style) => style?.copyWith(
+        fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+      );
 }

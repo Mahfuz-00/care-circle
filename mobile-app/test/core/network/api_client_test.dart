@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:care_circle_mobile/core/config/app_config.dart';
 import 'package:care_circle_mobile/core/error/exceptions.dart';
 import 'package:care_circle_mobile/core/error/failure.dart';
 import 'package:care_circle_mobile/core/network/api_client.dart';
@@ -112,7 +113,7 @@ void main() {
       expect(adapter.lastRequest?.headers['X-Care-Circle-Surface'], 'mobile');
       expect(
         adapter.lastRequest?.uri.toString(),
-        'http://10.0.2.2:8000/mobile/v1/today',
+        '${AppConfig.mobileApiBaseUrl}/today',
       );
     });
 

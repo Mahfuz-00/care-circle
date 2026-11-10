@@ -37,4 +37,55 @@ class FailedJobController extends Controller
 
         return response()->json(['data' => $jobs]);
     }
+
+    public function retry(string|int $id): JsonResponse
+    {
+        $this->auditPlatformRead('platform.failed_job_retried', ['id' => $id]);
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:retry', ['id' => [(string) $id]]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+        } catch (\Throwable $e) {
+            $output = $e->getMessage();
+        }
+
+        return response()->json([
+            'message' => "Job retry dispatched.",
+            'output' => trim($output),
+        ]);
+    }
+
+    public function retryAll(): JsonResponse
+    {
+        $this->auditPlatformRead('platform.all_failed_jobs_retried');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:retry', ['id' => ['all']]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+        } catch (\Throwable $e) {
+            $output = $e->getMessage();
+        }
+
+        return response()->json([
+            'message' => 'All failed jobs retry dispatched.',
+            'output' => trim($output),
+        ]);
+    }
+
+    public function flush(): JsonResponse
+    {
+        $this->auditPlatformRead('platform.failed_jobs_flushed');
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('queue:flush');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+        } catch (\Throwable $e) {
+            $output = $e->getMessage();
+        }
+
+        return response()->json([
+            'message' => 'Failed jobs queue flushed.',
+            'output' => trim($output),
+        ]);
+    }
 }

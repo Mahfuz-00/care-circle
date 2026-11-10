@@ -38,7 +38,7 @@ export function EmergencyPage() {
     <div>
       <PageHeader
         title="Emergency"
-        description="One press tells your care circle that you need help. Escalation, quiet hours and call limits stay server-enforced (PRD §7)."
+        description="One press tells your care circle that you need help. Escalation, quiet hours and call limits stay server-enforced."
       />
 
       <RaiseEmergencyPanel />

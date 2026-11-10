@@ -1,9 +1,11 @@
-import type {
-  InputHTMLAttributes,
-  ReactNode,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
+import {
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 
 /**
  * Form primitives: every control is labelled, every hint and error is wired to
@@ -63,21 +65,61 @@ export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElemen
   label: string
   hint?: string
   error?: string
+  /** Whether to show a password visibility toggle button when type="password". Defaults to true. */
+  showPasswordToggle?: boolean
 }
 
-export function TextField({ id, label, hint, error, required, className, ...rest }: TextFieldProps) {
+export function TextField({
+  id,
+  label,
+  hint,
+  error,
+  required,
+  type,
+  className,
+  showPasswordToggle = true,
+  ...rest
+}: TextFieldProps) {
+  const [showPassword, setShowPassword] = useState(false)
+  const isPassword = type === 'password'
+  const effectiveType = isPassword && showPassword ? 'text' : type
+
   return (
     <div className="flex flex-col">
       <LabelText htmlFor={id} label={label} required={required} />
       {hint ? <Hint id={`${id}-hint`}>{hint}</Hint> : null}
-      <input
-        {...rest}
-        id={id}
-        required={required}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy(id, hint, error)}
-        className={controlClasses(Boolean(error), className)}
-      />
+      <div className="relative">
+        <input
+          {...rest}
+          id={id}
+          type={effectiveType}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(id, hint, error)}
+          className={controlClasses(
+            Boolean(error),
+            isPassword && showPasswordToggle ? `pr-11 ${className ?? ''}` : className,
+          )}
+        />
+        {isPassword && showPasswordToggle ? (
+          <button
+            type="button"
+            aria-pressed={showPassword}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 right-0 flex min-h-[44px] min-w-[44px] items-center justify-center text-ink-500 hover:text-ink-800 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-teal-600 rounded-r-lg transition-colors cursor-pointer"
+          >
+            {showPassword ? (
+              <EyeOff className="size-5" aria-hidden="true" />
+            ) : (
+              <Eye className="size-5" aria-hidden="true" />
+            )}
+            <span className="sr-only">
+              {showPassword ? 'Warning: password visible on screen. Toggle to hide.' : 'Toggle to show password.'}
+            </span>
+          </button>
+        ) : null}
+      </div>
       {error ? <ErrorText id={`${id}-error`}>{error}</ErrorText> : null}
     </div>
   )

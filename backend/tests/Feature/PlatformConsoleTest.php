@@ -55,6 +55,25 @@ class PlatformConsoleTest extends TestCase
             ->assertJsonStructure(['data' => [['key', 'status', 'message', 'measured_at']]]);
     }
 
+    public function test_an_operator_can_list_and_view_client_households(): void
+    {
+        $circle = $this->makeCircle(null, ['name' => 'Sunny Meadow Household']);
+
+        Sanctum::actingAs($this->operator(), ['dashboard', 'platform.admin']);
+
+        $res = $this->getJson('/api/v1/platform/clients')
+            ->assertOk()
+            ->assertJsonStructure(['data' => [['id', 'name', 'plan_code', 'owner', 'stats']]]);
+
+        $this->assertNotEmpty($res->json('data'));
+
+        $clientId = $circle['circle']->id;
+        $this->getJson("/api/v1/platform/clients/{$clientId}")
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Sunny Meadow Household')
+            ->assertJsonStructure(['data' => ['id', 'name', 'billing', 'members', 'medications']]);
+    }
+
     public function test_health_checks_never_claim_more_than_they_measured(): void
     {
         Sanctum::actingAs($this->operator(), ['dashboard', 'platform.admin']);
@@ -85,18 +104,51 @@ class PlatformConsoleTest extends TestCase
             ->assertJsonPath('data.emergency_ack_seconds', null);
     }
 
-    public function test_the_audit_ledger_requires_a_circle_context_and_fails_closed_without_one(): void
+    public function test_the_platform_admin_can_read_all_audit_logs_across_platform_and_tenants(): void
     {
         $operator = $this->operator();
         Sanctum::actingAs($operator, ['dashboard', 'platform.admin']);
 
         $circle = $this->makeCircle();
 
-        // An operator is not a member of the circle, and with no context set the
-        // ledger returns nothing rather than everything.
-        $this->withHeader('X-Care-Circle', '')
-            ->getJson('/api/v1/platform/audit-log')
-            ->assertOk()
-            ->assertJsonPath('data', []);
+        // Platform action (care_circle_id = null)
+        app(\App\Services\Auditing\AuditLogger::class)->log(
+            action: 'platform.system_maintenance',
+            actor: $operator,
+            careCircleId: null,
+            level: \App\Enums\AuditLevel::Notice,
+        );
+
+        // Tenant action (care_circle_id = $circle['circle']->id)
+        app(\App\Services\Auditing\AuditLogger::class)->log(
+            action: 'medication.dose_taken',
+            actor: $operator,
+            careCircleId: $circle['circle']->id,
+            level: \App\Enums\AuditLevel::Info,
+        );
+
+        // Without care circle filter, platform admin receives all logs across both platform and tenants
+        $response = $this->getJson('/api/v1/platform/audit-log')
+            ->assertOk();
+
+        $actions = collect($response->json('data'))->pluck('action');
+        $this->assertTrue($actions->contains('platform.system_maintenance'));
+        $this->assertTrue($actions->contains('medication.dose_taken'));
+
+        // When filtered by care circle id, only that circle's logs are returned
+        $circleResponse = $this->getJson("/api/v1/platform/audit-log?care_circle_id={$circle['circle']->id}")
+            ->assertOk();
+
+        $circleActions = collect($circleResponse->json('data'))->pluck('action');
+        $this->assertTrue($circleActions->contains('medication.dose_taken'));
+        $this->assertFalse($circleActions->contains('platform.system_maintenance'));
+
+        // When filtered by scope=platform, only platform logs are returned
+        $platformResponse = $this->getJson('/api/v1/platform/audit-log?scope=platform')
+            ->assertOk();
+
+        $platformActions = collect($platformResponse->json('data'))->pluck('action');
+        $this->assertTrue($platformActions->contains('platform.system_maintenance'));
+        $this->assertFalse($platformActions->contains('medication.dose_taken'));
     }
 }

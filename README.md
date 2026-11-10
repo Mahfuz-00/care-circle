@@ -25,6 +25,11 @@ silently, and a medical emergency button that actually reaches the care circle.
 A token minted on one client surface is rejected by the other. The landlord console is
 deliberately absent from mobile.
 
+The web app is one React build with three entry points: `/` is the public marketing page,
+`/dashboard` is the authenticated dashboard, and `/platform/*` is the operator console. Pricing on
+the marketing page is read from the public `GET /api/v1/plans` endpoint, so it cannot drift from
+the limits the API enforces.
+
 ## Getting started
 
 PostgreSQL 16 is required — tenant isolation is built on Row-Level Security, which is a Postgres
@@ -64,6 +69,7 @@ deliberately unable to change schema. See [`docs/ARCHITECTURE.md`](./docs/ARCHIT
 |---|---|
 | [`PRD.md`](./PRD.md) | the authoritative specification |
 | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | surfaces, isolation model, escalation, and why the ordering constraints exist |
+| [`docs/DESIGN-PRINCIPLES.md`](./docs/DESIGN-PRINCIPLES.md) | the working design doctrine for all three surfaces |
 | [`docs/API.md`](./docs/API.md) | endpoint reference for all three surfaces |
 | [`AGENTS.md`](./AGENTS.md) | working conventions for this repo |
 

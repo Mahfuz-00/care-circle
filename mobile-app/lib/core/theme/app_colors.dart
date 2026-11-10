@@ -1,39 +1,49 @@
 import 'package:flutter/material.dart';
 
-/// Warm Sage palette (PRD §12): calm cream background, deep sage primary,
-/// forest teal accent. Contrast ratios are chosen so 18pt+ text clears WCAG AA
-/// on the cream background, and the `HighContrast` set clears AAA.
+/// CareCircle design tokens (aligned with frontend/src/index.css):
+/// Canvas: crisp light slate pearl (#f8fafc)
+/// Cards: pure white (#ffffff) with subtle border (#e2e8f0)
+/// Primary: light navy blue (#1d4e89 / #2563a8 / #102a4d)
+/// Accent: luminous sky / cyan (#0284c7 / #0369a1)
+/// Ink: slate typography (#0f172a / #334155 / #64748b)
+/// Status: danger (#dc2626), warning (#d97706), ok (#16a34a)
 abstract final class AppColors {
-  // Calm cream background.
-  static const Color cream = Color(0xFFF6F2E7);
-  static const Color creamSurface = Color(0xFFFFFDF7);
-  static const Color creamSunken = Color(0xFFEDE7D8);
+  // Canvas & surface — crisp light slate pearl.
+  static const Color cream = Color(0xFFF8FAFC);
+  static const Color creamSurface = Color(0xFFFFFFFF);
+  static const Color creamSunken = Color(0xFFF1F5F9);
 
-  // Deep sage primary.
-  static const Color deepSage = Color(0xFF3C5745);
-  static const Color deepSageStrong = Color(0xFF2A4032);
-  static const Color sage = Color(0xFF5F7D68);
-  static const Color sageTint = Color(0xFFDCE6DB);
+  // Primary — light navy blue.
+  static const Color deepSage = Color(0xFF1D4E89);
+  static const Color deepSageStrong = Color(0xFF102A4D);
+  static const Color sage = Color(0xFF2563A8);
+  static const Color sageTint = Color(0xFFE0ECF6);
 
-  // Forest teal accent.
-  static const Color forestTeal = Color(0xFF13574E);
-  static const Color forestTealStrong = Color(0xFF0A3A34);
-  static const Color tealTint = Color(0xFFD3E5E1);
+  // Accent — luminous sky / cyan.
+  static const Color forestTeal = Color(0xFF0284C7);
+  static const Color forestTealStrong = Color(0xFF0369A1);
+  static const Color tealTint = Color(0xFFE0F2FE);
 
-  // Warm ink.
-  static const Color ink = Color(0xFF22271E);
-  static const Color inkHighContrast = Color(0xFF0C0F0A);
-  static const Color inkMuted = Color(0xFF4E5748);
-  static const Color inkMutedHighContrast = Color(0xFF2B3226);
+  // Ink — deep slate typography.
+  static const Color ink = Color(0xFF0F172A);
+  static const Color inkHighContrast = Color(0xFF020617);
+  static const Color inkMuted = Color(0xFF64748B);
+  static const Color inkMutedHighContrast = Color(0xFF334155);
 
   // Emergency / alert.
-  static const Color alert = Color(0xFF9A2A22);
-  static const Color alertStrong = Color(0xFF6F1B15);
-  static const Color warning = Color(0xFF7A4E0E);
+  static const Color alert = Color(0xFFDC2626);
+  static const Color alertStrong = Color(0xFF991B1B);
+  static const Color alertTint = Color(0xFFFEE2E2);
 
-  // Neutrals.
+  // Warning & success.
+  static const Color warning = Color(0xFFD97706);
+  static const Color warningTint = Color(0xFFFEF3C7);
+  static const Color ok = Color(0xFF16A34A);
+  static const Color okTint = Color(0xFFDCFCE7);
+
+  // Neutrals & borders.
   static const Color white = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFBFC7B9);
-  static const Color borderStrong = Color(0xFF3F4A3A);
-  static const Color disabled = Color(0xFF7C857A);
+  static const Color border = Color(0xFFE2E8F0);
+  static const Color borderStrong = Color(0xFFCBD5E1);
+  static const Color disabled = Color(0xFF94A3B8);
 }

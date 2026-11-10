@@ -23,6 +23,61 @@ export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   )
 }
 
+/**
+ * Skeleton placeholders for content areas that already have a known shape.
+ *
+ * The shape is hidden from assistive tech and the loading state is announced
+ * once, in words, so a screen reader hears "Loading medications…" rather than
+ * a stream of empty boxes. Motion is suppressed by the global
+ * `prefers-reduced-motion` rule in index.css.
+ */
+export function SkeletonLine({ className = '' }: { className?: string }) {
+  return <span aria-hidden="true" className={`block h-4 animate-pulse rounded bg-cream-300/80 ${className}`} />
+}
+
+/** A stack of skeleton cards shaped like the list that is arriving. */
+export function SkeletonList({ rows = 3, label }: { rows?: number; label: string }) {
+  return (
+    <div role="status" aria-live="polite">
+      <span className="sr-only">{label}</span>
+      <div className="space-y-3">
+        {Array.from({ length: rows }, (_, index) => (
+          <div
+            key={index}
+            aria-hidden="true"
+            className="rounded-[var(--radius-card)] border border-cream-300 bg-white px-4 py-4"
+          >
+            <SkeletonLine className="w-1/3" />
+            <SkeletonLine className="mt-2 w-1/4" />
+            <SkeletonLine className="mt-3 w-3/5" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** A row of skeleton stat tiles, shaped like the metric grids on the pages. */
+export function SkeletonStats({ tiles = 4, label }: { tiles?: number; label: string }) {
+  return (
+    <div role="status" aria-live="polite">
+      <span className="sr-only">{label}</span>
+      <div className="grid gap-4 sm:grid-cols-4">
+        {Array.from({ length: tiles }, (_, index) => (
+          <div
+            key={index}
+            aria-hidden="true"
+            className="rounded-[var(--radius-card)] border border-cream-300 bg-cream-100 px-4 py-4"
+          >
+            <SkeletonLine className="w-1/2" />
+            <SkeletonLine className="mt-2 h-7 w-1/3" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function EmptyState({
   title,
   description,

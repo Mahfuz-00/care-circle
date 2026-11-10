@@ -61,6 +61,17 @@ export function formatNumber(value: number | null | undefined): string | null {
   return new Intl.NumberFormat().format(value)
 }
 
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+})
+
+export function formatCurrency(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return '$0'
+  return currencyFormatter.format(value)
+}
+
 export function formatPercent(value: number | null | undefined, digits = 0): string | null {
   if (value == null || Number.isNaN(value)) return null
   return `${value.toFixed(digits)}%`

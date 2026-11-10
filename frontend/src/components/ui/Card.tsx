@@ -26,18 +26,32 @@ export function CardHeader({
   description,
   actions,
   id,
+  children,
+  className = '',
 }: {
-  title: ReactNode
+  title?: ReactNode
   description?: ReactNode
   actions?: ReactNode
   id?: string
+  children?: ReactNode
+  className?: string
 }) {
+  if (children) {
+    return (
+      <div className={`border-b border-cream-200 px-4 py-3 sm:px-5 ${className}`}>
+        {children}
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-cream-200 px-4 py-3 sm:px-5">
+    <div className={`flex flex-wrap items-start justify-between gap-3 border-b border-cream-200 px-4 py-3 sm:px-5 ${className}`}>
       <div className="min-w-0">
-        <h2 id={id} className="text-lg font-semibold text-ink-900">
-          {title}
-        </h2>
+        {title ? (
+          <h2 id={id} className="text-lg font-semibold text-ink-900">
+            {title}
+          </h2>
+        ) : null}
         {description ? <p className="mt-1 text-sm text-ink-500">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}

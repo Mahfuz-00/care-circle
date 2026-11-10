@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/accessibility/announcer.dart';
-import '../../../../core/config/app_config.dart';
 import '../../../../core/router/app_router.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/accessible_text_field.dart';
+import '../../../../core/widgets/app_logo_widget.dart';
 import '../../../../core/widgets/message_banner.dart';
 import '../../../../core/widgets/screen_scaffold.dart';
 import '../bloc/auth_bloc.dart';
@@ -77,12 +77,16 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Icon(Icons.diversity_1, size: 72, color: theme.colorScheme.primary),
-              const SizedBox(height: AppSizes.gap),
+              const AppLogoWidget(
+                size: 48,
+                showWordmark: true,
+                subtitle: 'Senior Companion & Care',
+              ),
+              const SizedBox(height: AppSizes.gapLarge),
               Semantics(
                 header: true,
                 child: Text(
-                  'Welcome back to ${AppConfig.appName}',
+                  'Welcome back',
                   style: theme.textTheme.headlineMedium,
                   softWrap: true,
                   maxLines: null,

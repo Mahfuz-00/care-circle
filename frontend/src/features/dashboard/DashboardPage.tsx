@@ -1,11 +1,21 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import {
+  Activity,
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  Pill,
+  Plus,
+  ShieldAlert,
+  Users,
+  ArrowRight,
+} from 'lucide-react'
 
 import { Badge } from '../../components/ui/Badge'
-import { buttonClasses } from '../../components/ui/buttonStyles'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { EmptyState, ErrorState, InlineNotice, LoadingState } from '../../components/ui/states'
+import { EmptyState, ErrorState, LoadingState } from '../../components/ui/states'
 import {
   compareAscending,
   daysAgo,
@@ -19,96 +29,222 @@ import { useSession } from '../auth/useSession'
 import { useAdherence } from '../adherence/hooks'
 import { MemberSelector } from '../care-circle/MemberSelector'
 import { TodayDoses } from '../doses/TodayDoses'
+import { useTodayDoses } from '../doses/hooks'
 import { useAppointments } from '../appointments/hooks'
-import { describeReminders } from '../appointments/options'
 import { useEmergencyAlerts } from '../emergency/hooks'
 import { EMERGENCY_STATUS_LABELS, EMERGENCY_TYPE_LABELS, isActiveAlert } from '../emergency/options'
 import { useMedications } from '../medications/hooks'
 
-/** The daily landing view: what is due, what is running out, what is next, what is urgent. */
 export function DashboardPage() {
   const { user, capabilities, activeCareCircle, roleName } = useSession()
   const [viewingUserId, setViewingUserId] = useState<number | null>(null)
+
   const alerts = useEmergencyAlerts()
   const medications = useMedications()
+  const appointments = useAppointments()
+  const todayDoses = useTodayDoses(viewingUserId)
+
+  const from = toDateParam(daysAgo(30))
+  const to = toDateParam(new Date())
+  const adherence = useAdherence({ from, to, userId: viewingUserId })
+  const adherenceData = adherence.data
 
   const activeAlerts = (alerts.data ?? []).filter((alert) => isActiveAlert(alert.status))
   const lowStock = (medications.data ?? []).filter((medication) => medication.is_low_stock)
   const viewingSelf = viewingUserId == null || viewingUserId === user?.id
 
+  // Doses KPI
+  const dosesList = todayDoses.data ?? []
+  const takenCount = dosesList.filter((d) => d.status === 'taken').length
+  const totalDosesCount = dosesList.length
+  const dosesPercent = totalDosesCount > 0 ? Math.round((takenCount / totalDosesCount) * 100) : 100
+
+  // Appointments KPI
+  const upcomingAppointments = (appointments.data ?? [])
+    .filter((a) => isUpcoming(a.starts_at))
+    .sort((a, b) => compareAscending(a.starts_at, b.starts_at))
+  const nextAppointment = upcomingAppointments[0]
+
   return (
-    <div>
+    <div className="space-y-4 font-sans text-ink-900 pb-10">
+      {/* 1. COMPACT PAGE HEADER */}
       <PageHeader
-        title={user ? `Hello, ${user.name.split(' ')[0]}` : 'Dashboard'}
+        title={user ? `Hello, ${user.name.split(' ')[0]}` : 'Care Circle Dashboard'}
         description={
           activeCareCircle
-            ? `${activeCareCircle.name} · timezone ${activeCareCircle.timezone} · signed in as ${roleName}`
-            : 'No care circle is active yet.'
+            ? `${activeCareCircle.name} · Timezone: ${activeCareCircle.timezone} · Active Role: ${roleName}`
+            : 'No care circle selected.'
         }
         actions={
-          <>
-            <Link to="/emergency" className={buttonClasses('danger', 'lg')}>
-              I need help
+          <div className="flex flex-wrap items-center gap-2">
+            {capabilities.createOwnMedication && (
+              <Link
+                to="/medications/new"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-cream-300 bg-white px-3 py-1.5 text-xs font-bold text-ink-800 shadow-2xs hover:bg-cream-100 transition-colors"
+              >
+                <Plus className="size-3.5 text-teal-700" />
+                <span>Add Medication</span>
+              </Link>
+            )}
+            <Link
+              to="/emergency"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-danger-300 bg-danger-50 px-3 py-1.5 text-xs font-bold text-danger-700 shadow-2xs hover:bg-danger-100 transition-colors"
+            >
+              <ShieldAlert className="size-3.5 text-danger-600" />
+              <span>Emergency Help</span>
             </Link>
-          </>
+          </div>
         }
       />
 
-      {activeAlerts.length > 0 ? (
-        <div className="mb-6">
-          <InlineNotice tone="danger" title="An alert is open in this circle">
-            <ul className="space-y-1">
-              {activeAlerts.map((alert) => (
-                <li key={alert.id}>
-                  {EMERGENCY_TYPE_LABELS[alert.type] ?? alert.type} raised by {alert.raised_by.name} ·{' '}
-                  {EMERGENCY_STATUS_LABELS[alert.status]}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2">
-              <Link to="/emergency" className="font-semibold underline">
-                Open the emergency page
-              </Link>{' '}
-              to acknowledge or resolve it.
-            </p>
-          </InlineNotice>
+      {/* 2. EMERGENCY ALERT BANNER (IF ACTIVE) */}
+      {activeAlerts.length > 0 && (
+        <div className="rounded-xl border-2 border-danger-400 bg-danger-50/90 p-3.5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-danger-600 text-white animate-pulse">
+                <ShieldAlert className="size-4" />
+              </span>
+              <div>
+                <p className="text-xs font-bold text-danger-950">
+                  {activeAlerts.length} Active Emergency Alert Raised
+                </p>
+                <p className="text-[11px] text-danger-800">
+                  {activeAlerts.map((a) => (
+                    <span key={a.id}>
+                      {EMERGENCY_TYPE_LABELS[a.type] ?? a.type} by <strong>{a.raised_by.name}</strong> ({EMERGENCY_STATUS_LABELS[a.status]})
+                    </span>
+                  ))}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/emergency"
+              className="rounded-lg bg-danger-600 px-3 py-1 text-xs font-bold text-white hover:bg-danger-700 transition-colors"
+            >
+              Respond Now →
+            </Link>
+          </div>
         </div>
-      ) : null}
+      )}
 
-      <div className="space-y-6">
-        <Card>
-          <CardHeader
-            title="Today"
-            description="Doses scheduled for today, taken straight from the API. Nothing is estimated here."
-          />
-          <CardBody>
-            {capabilities.viewOthersMedications ? (
-              <MemberSelector value={viewingUserId} onChange={setViewingUserId} />
+      {/* 3. COMPACT 4-CARD TELEMETRY ROW */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {/* Metric 1: Today's Schedule */}
+        <div className="rounded-xl border border-cream-300 bg-white p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+              Today's Schedule
+            </p>
+            <Pill className="size-3.5 text-teal-700" />
+          </div>
+          <p className="mt-1 text-xl sm:text-2xl font-bold tabular-nums text-ink-950 font-mono">
+            {totalDosesCount === 0 ? '0 Doses' : `${takenCount} / ${totalDosesCount}`}
+          </p>
+          <p className="mt-1 text-[11px] font-medium text-teal-700">
+            {totalDosesCount === 0
+              ? 'Nothing due today'
+              : `${dosesPercent}% completed · ${totalDosesCount - takenCount} pending`}
+          </p>
+        </div>
+
+        {/* Metric 2: Adherence SLA */}
+        <div className="rounded-xl border border-cream-300 bg-white p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+              30-Day Adherence
+            </p>
+            <Activity className="size-3.5 text-teal-700" />
+          </div>
+          <p className="mt-1 text-xl sm:text-2xl font-bold tabular-nums text-ink-950 font-mono">
+            {formatPercent(adherenceData?.percentage) ?? '—'}
+          </p>
+          <p className="mt-1 text-[11px] font-medium text-emerald-700">
+            Target ≥90% · {adherenceData ? `${adherenceData.taken} taken of ${adherenceData.total}` : 'Calculating...'}
+          </p>
+        </div>
+
+        {/* Metric 3: Regimens & Refills */}
+        <div className="rounded-xl border border-cream-300 bg-white p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+              Inventory Health
+            </p>
+            {lowStock.length === 0 ? (
+              <CheckCircle2 className="size-3.5 text-emerald-600" />
             ) : (
-              <p className="text-sm text-ink-500">
-                Showing your own doses. Caregiver visibility of another member’s doses is not part of your role.
-              </p>
+              <AlertTriangle className="size-3.5 text-amber-600" />
             )}
-          </CardBody>
-        </Card>
+          </div>
+          <p className="mt-1 text-xl sm:text-2xl font-bold tabular-nums text-ink-950 font-mono">
+            {medications.data ? `${medications.data.length} Meds` : '—'}
+          </p>
+          <p
+            className={`mt-1 text-[11px] font-medium ${
+              lowStock.length === 0 ? 'text-emerald-700' : 'text-amber-700 font-bold'
+            }`}
+          >
+            {lowStock.length === 0 ? 'All stocks sufficient' : `${lowStock.length} low-stock alert(s)`}
+          </p>
+        </div>
 
-        <TodayDoses
-          userId={viewingUserId}
-          heading={viewingSelf ? 'Your doses today' : 'Doses today for the selected member'}
-          headingId="dashboard-doses"
-        />
+        {/* Metric 4: Next Appointment */}
+        <div className="rounded-xl border border-cream-300 bg-white p-3.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-ink-500">
+              Next Visit
+            </p>
+            <Calendar className="size-3.5 text-teal-700" />
+          </div>
+          <p className="mt-1 text-sm font-bold text-ink-950 truncate">
+            {nextAppointment ? nextAppointment.title : 'None Scheduled'}
+          </p>
+          <p className="mt-1 text-[11px] font-medium text-ink-500 font-mono">
+            {nextAppointment ? formatDateTime(nextAppointment.starts_at) : 'No future visits recorded'}
+          </p>
+        </div>
+      </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+      {/* 4. CAREGIVER MEMBER SELECTOR (IF MULTI-MEMBER PERMISSION) */}
+      {capabilities.viewOthersMedications && (
+        <div className="rounded-xl border border-cream-300 bg-white p-3 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Users className="size-4 text-teal-700" />
+              <span className="text-xs font-bold text-ink-900">Viewing Schedule For:</span>
+            </div>
+            <div className="w-full sm:w-72">
+              <MemberSelector value={viewingUserId} onChange={setViewingUserId} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. MAIN 2-COLUMN GRID */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* LEFT COLUMN (2/3): DOSES & REFILLS */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Today's Doses */}
+          <TodayDoses
+            userId={viewingUserId}
+            heading={viewingSelf ? 'Today’s Medication Schedule' : 'Schedule for Selected Member'}
+            headingId="dashboard-doses"
+          />
+
+          {/* Low Stock Panel */}
           <LowStockPanel
             loading={medications.isPending}
             error={medications.error}
             onRetry={() => void medications.refetch()}
             medications={lowStock}
           />
-          <AdherencePanel userId={viewingUserId} />
         </div>
 
-        <UpcomingAppointmentsPanel />
+        {/* RIGHT COLUMN (1/3): ADHERENCE & APPOINTMENTS */}
+        <div className="space-y-4">
+          <AdherencePanel userId={viewingUserId} />
+          <UpcomingAppointmentsPanel appointments={upcomingAppointments} />
+        </div>
       </div>
     </div>
   )
@@ -123,42 +259,57 @@ function LowStockPanel({
   loading: boolean
   error: unknown
   onRetry: () => void
-  medications: Array<{ id: number; name: string; stock_quantity: number; days_remaining: number; low_stock_threshold: number }>
+  medications: Array<{
+    id: number
+    name: string
+    stock_quantity: number
+    days_remaining: number
+    low_stock_threshold: number
+  }>
 }) {
   return (
     <Card>
       <CardHeader
-        title="Running low"
-        description="Medications the API has flagged as low stock, with the days it calculated."
+        title="Medication Stock Alerts"
+        description="Medications at or below threshold requiring pharmacy refills."
       />
-      <CardBody>
-        {loading ? <LoadingState label="Loading stock levels…" /> : null}
+      <CardBody className="p-3.5">
+        {loading ? <LoadingState label="Checking medication stock levels…" /> : null}
         {error ? <ErrorState error={error} title="Stock levels could not be loaded" onRetry={onRetry} /> : null}
         {!loading && !error && medications.length === 0 ? (
-          <EmptyState
-            title="No low-stock medication"
-            description="Nothing in this circle is at or below its low-stock threshold right now."
-            tone="sage"
-          />
+          <div className="flex items-center gap-2.5 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
+            <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
+            <span>All active medications have sufficient stock. Zero immediate refills needed.</span>
+          </div>
         ) : null}
-        <ul className="space-y-3">
-          {medications.map((medication) => (
-            <li key={medication.id} className="rounded-lg border border-danger-200 bg-danger-50 px-3 py-3">
-              <p className="text-base font-semibold text-ink-900">{medication.name}</p>
-              <p className="text-sm text-ink-700">
-                {formatNumber(medication.stock_quantity)} units on hand · {formatNumber(medication.days_remaining)} days
-                remaining · threshold {formatNumber(medication.low_stock_threshold)}
-              </p>
-              <Link
-                to="/medications/$medicationId"
-                params={{ medicationId: String(medication.id) }}
-                className="mt-2 inline-block text-sm font-semibold text-teal-700 underline underline-offset-4"
+
+        {medications.length > 0 && (
+          <ul className="space-y-2">
+            {medications.map((medication) => (
+              <li
+                key={medication.id}
+                className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs"
               >
-                Open {medication.name} to record a refill
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <div>
+                  <p className="font-bold text-ink-950 text-sm">{medication.name}</p>
+                  <p className="text-ink-600 font-mono mt-0.5">
+                    {formatNumber(medication.stock_quantity)} units left ·{' '}
+                    <span className="font-bold text-amber-900">
+                      {formatNumber(medication.days_remaining)} days remaining
+                    </span>
+                  </p>
+                </div>
+                <Link
+                  to="/medications/$medicationId"
+                  params={{ medicationId: String(medication.id) }}
+                  className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-xs font-bold text-amber-900 hover:bg-amber-100 transition-colors"
+                >
+                  Record Refill →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardBody>
     </Card>
   )
@@ -173,32 +324,63 @@ function AdherencePanel({ userId }: { userId: number | null }) {
   return (
     <Card>
       <CardHeader
-        title="Adherence, last 30 days"
-        description={`Window ${from} → ${to}, exactly as reported by the adherence endpoint.`}
+        title="Adherence (30 Days)"
+        description={`Reported compliance window ${from} → ${to}.`}
       />
-      <CardBody>
-        {adherence.isPending ? <LoadingState label="Loading adherence…" /> : null}
+      <CardBody className="p-4 space-y-3">
+        {adherence.isPending ? <LoadingState label="Calculating compliance SLA…" /> : null}
         {adherence.isError ? (
           <ErrorState error={adherence.error} title="Adherence could not be loaded" onRetry={() => void adherence.refetch()} />
         ) : null}
         {summary ? (
           summary.total === 0 ? (
             <EmptyState
-              title="No doses in this window"
-              description="There was nothing scheduled to confirm, so no rate is shown."
+              title="No doses in window"
+              description="No confirmed doses scheduled in this 30-day window."
             />
           ) : (
-            <div className="space-y-2">
-              <p className="text-3xl font-semibold text-sage-800">
-                {formatPercent(summary.percentage) ?? 'Not returned'}
-              </p>
-              <p className="text-sm text-ink-500">
-                {formatNumber(summary.taken)} taken · {formatNumber(summary.skipped)} skipped ·{' '}
-                {formatNumber(summary.missed)} missed · {formatNumber(summary.total)} scheduled
-              </p>
-              <Link to="/adherence" className="text-sm font-semibold text-teal-700 underline underline-offset-4">
-                See the full adherence view
-              </Link>
+            <div className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <span className="text-2xl font-bold font-mono text-teal-800">
+                  {formatPercent(summary.percentage) ?? '—'}
+                </span>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  {summary.percentage >= 90 ? 'Healthy SLA' : 'Needs Attention'}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-2 w-full rounded-full bg-cream-200 overflow-hidden">
+                <div
+                  className="h-full bg-teal-600 rounded-full"
+                  style={{ width: `${Math.min(100, summary.percentage)}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 pt-1 text-center font-mono">
+                <div className="rounded-lg bg-cream-50 p-2 border border-cream-200">
+                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Taken</span>
+                  <span className="font-extrabold text-ink-900 text-sm">{formatNumber(summary.taken)}</span>
+                </div>
+                <div className="rounded-lg bg-cream-50 p-2 border border-cream-200">
+                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Skipped</span>
+                  <span className="font-extrabold text-ink-900 text-sm">{formatNumber(summary.skipped)}</span>
+                </div>
+                <div className="rounded-lg bg-cream-50 p-2 border border-cream-200">
+                  <span className="text-[10px] uppercase font-bold text-ink-500 block">Missed</span>
+                  <span className="font-extrabold text-danger-700 text-sm">{formatNumber(summary.missed)}</span>
+                </div>
+              </div>
+
+              <div className="pt-1 text-right">
+                <Link
+                  to="/adherence"
+                  className="text-xs font-bold text-teal-700 hover:underline inline-flex items-center gap-1"
+                >
+                  <span>Full adherence report</span>
+                  <ArrowRight className="size-3" />
+                </Link>
+              </div>
             </div>
           )
         ) : null}
@@ -207,58 +389,62 @@ function AdherencePanel({ userId }: { userId: number | null }) {
   )
 }
 
-function UpcomingAppointmentsPanel() {
-  const appointments = useAppointments()
-  const upcoming = (appointments.data ?? [])
-    .filter((appointment) => isUpcoming(appointment.starts_at))
-    .sort((a, b) => compareAscending(a.starts_at, b.starts_at))
-    .slice(0, 3)
+function UpcomingAppointmentsPanel({
+  appointments,
+}: {
+  appointments: Array<{
+    id: number
+    title: string
+    starts_at: string
+    location?: string | null
+    reminder_offsets?: number[] | null
+    shared_with_circle?: boolean
+  }>
+}) {
+  const upcoming = appointments.slice(0, 3)
 
   return (
     <Card>
       <CardHeader
-        title="Next appointments"
-        description="The three soonest appointments the API returned for this circle."
+        title="Upcoming Care Visits"
+        description="The three soonest scheduled clinical appointments."
         actions={
-          <Link to="/appointments" className={buttonClasses('secondary')}>
-            All appointments
+          <Link
+            to="/appointments"
+            className="text-xs font-bold text-teal-700 hover:underline"
+          >
+            All Visits →
           </Link>
         }
       />
-      <CardBody>
-        {appointments.isPending ? <LoadingState label="Loading appointments…" /> : null}
-        {appointments.isError ? (
-          <ErrorState
-            error={appointments.error}
-            title="Appointments could not be loaded"
-            onRetry={() => void appointments.refetch()}
-          />
-        ) : null}
-        {appointments.isSuccess && upcoming.length === 0 ? (
-          <EmptyState
-            title="Nothing scheduled"
-            description="No future appointment is recorded for this care circle yet."
-          />
-        ) : null}
-        <ul className="space-y-3">
-          {upcoming.map((appointment) => (
-            <li key={appointment.id} className="rounded-lg border border-cream-300 bg-cream-50 px-3 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-base font-semibold text-ink-900">{appointment.title}</p>
-                  <p className="text-sm text-ink-700">
-                    {formatDateTime(appointment.starts_at) ?? 'Start time not returned'}
-                    {appointment.location ? ` · ${appointment.location}` : ''}
-                  </p>
-                  <p className="text-sm text-ink-500">Reminders: {describeReminders(appointment.reminder_offsets)}</p>
+      <CardBody className="p-3.5">
+        {upcoming.length === 0 ? (
+          <p className="text-xs text-ink-500 p-2 text-center">No upcoming visits scheduled.</p>
+        ) : (
+          <ul className="space-y-2">
+            {upcoming.map((a) => (
+              <li
+                key={a.id}
+                className="rounded-xl border border-cream-200 bg-cream-50/60 p-2.5 text-xs hover:bg-cream-100/60 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-bold text-ink-900 text-xs">{a.title}</p>
+                    <p className="text-[11px] text-ink-500 font-mono mt-0.5">
+                      {formatDateTime(a.starts_at) ?? 'Time not set'}
+                    </p>
+                    {a.location && (
+                      <p className="text-[11px] text-ink-600 mt-0.5">📍 {a.location}</p>
+                    )}
+                  </div>
+                  <Badge tone={a.shared_with_circle ? 'teal' : 'neutral'}>
+                    {a.shared_with_circle ? 'Shared' : 'Private'}
+                  </Badge>
                 </div>
-                <Badge tone={appointment.shared_with_circle ? 'teal' : 'neutral'}>
-                  {appointment.shared_with_circle ? 'Shared' : 'Private'}
-                </Badge>
-              </div>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ul>
+        )}
       </CardBody>
     </Card>
   )

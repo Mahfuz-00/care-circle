@@ -163,13 +163,17 @@ export interface FailedJob {
 
 export interface AuditLogEntry {
   id: number | string
-  actor?: { id: number; name: string } | null
+  actor?: { id: number; name: string; email?: string } | null
+  actor_user_id?: number | null
+  actor_role?: string | null
   care_circle_id?: number | null
+  care_circle_name?: string | null
   action?: string | null
   level?: string | null
   ip_address?: string | null
   created_at?: string | null
   payload?: Record<string, unknown> | null
+  scope?: 'platform' | 'client' | string
 }
 
 export interface PlatformMetrics {
@@ -253,3 +257,350 @@ export interface RefillPayload {
   quantity: number
   note?: string
 }
+
+/**
+ * A row of the plan catalogue (PRD §8). A null cap means the plan does not cap
+ * that dimension — the UI says so rather than printing a zero.
+ */
+export interface Plan {
+  code: string
+  name: string
+  seats: number | null
+  medications: number | null
+  voice_minutes: number | null
+  notes: string | null
+}
+
+export interface PlatformClientListItem {
+  id: number
+  name: string
+  plan_code: string
+  plan_name: string
+  timezone: string
+  created_at: string
+  status: 'active' | 'suspended' | 'past_due' | 'cancelled'
+  mrr: number
+  owner: {
+    id: number
+    name: string
+    email: string
+  }
+  stats: {
+    members_count: number
+    medications_count: number
+    active_alerts_count: number
+  }
+}
+
+export interface PlatformClientDetail {
+  id: number
+  name: string
+  plan_code: string
+  plan_name: string
+  plan_limits: {
+    seats: number | null
+    medications: number | null
+    voice_minutes: number | null
+  }
+  timezone: string
+  quiet_hours_start?: string | null
+  quiet_hours_end?: string | null
+  created_at: string
+  status: string
+  mrr: number
+  billing: {
+    cycle: string
+    next_billing_date: string
+    payment_method: string
+    payment_status: string
+  }
+  owner: {
+    id: number
+    name: string
+    email: string
+  }
+  members: Array<{
+    id: number
+    role: string
+    status: string
+    created_at: string
+    user_id: number
+    name: string
+    email: string
+  }>
+  medications: Array<{
+    id: number
+    name: string
+    dosage: string
+    frequency: string
+    stock_quantity: number
+    is_low_stock: boolean
+    created_at: string
+  }>
+  recent_alerts: Array<{
+    id: number
+    type: string
+    status: string
+    created_at: string
+    acknowledged_at?: string | null
+    resolved_at?: string | null
+  }>
+}
+
+export interface PlatformBillingInvoice {
+  id: number
+  care_circle_id: number
+  invoice_number: string
+  amount_cents: number
+  currency: string
+  status: 'draft' | 'pending' | 'paid' | 'failed' | 'refunded'
+  payment_method: 'card' | 'bank_transfer' | 'cash'
+  plan_code: string
+  billing_period_start: string
+  billing_period_end: string
+  due_at: string
+  paid_at?: string | null
+  items: Array<{
+    description: string
+    amount_cents: number
+    quantity?: number
+  }>
+  notes?: string | null
+  created_at: string
+  care_circle?: {
+    id: number
+    name: string
+    plan_code: string
+    status: string
+  }
+}
+
+export interface InvoicesApiResponse {
+  invoices: {
+    data: PlatformBillingInvoice[]
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+  stats: {
+    total_count: number
+    paid_count: number
+    pending_cash_count: number
+    pending_cash_cents: number
+    total_revenue_cents: number
+  }
+}
+
+export interface PaymentGatewaySettings {
+  active_gateway: string
+  mode: 'sandbox' | 'live'
+  currency: string
+  auto_billing_enabled: boolean
+  gateways: {
+    stripe: {
+      enabled: boolean
+      sandbox: boolean
+      publishable_key: string
+      secret_key?: string
+      webhook_secret?: string
+    }
+    bank_transfer: {
+      enabled: boolean
+      bank_name: string
+      account_name: string
+      account_number: string
+      routing_code: string
+      instructions: string
+    }
+    cash: {
+      enabled: boolean
+      instructions: string
+    }
+  }
+}
+
+export interface EmailSettings {
+  mailer: string
+  host: string
+  port: number
+  encryption: string
+  username: string
+  password?: string
+  from_address: string
+  from_name: string
+  templates: Array<{
+    id: string
+    name: string
+    enabled: boolean
+  }>
+}
+
+export interface RefundPolicy {
+  policy_markdown: string
+  refund_window_days: number
+  monthly_refund_percent: number
+  annual_refund_percent: number
+  auto_approve_under_cents: number
+  contact_email: string
+}
+
+export interface RefundRecord {
+  id: number
+  invoice_id: number
+  care_circle_id: number
+  user_id: number
+  amount_cents: number
+  currency: string
+  status: 'pending' | 'approved' | 'rejected'
+  reason: string
+  admin_notes?: string | null
+  processed_by?: number | null
+  processed_at?: string | null
+  created_at: string
+  care_circle?: {
+    id: number
+    name: string
+    plan_code: string
+    status: string
+  }
+  user?: {
+    id: number
+    name: string
+    email: string
+  }
+  processor?: {
+    id: number
+    name: string
+  }
+}
+
+export interface RefundsPayload {
+  policy: RefundPolicy
+  refunds: {
+    data: RefundRecord[]
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+  stats: {
+    total_refunded_cents: number
+    pending_count: number
+    approved_count: number
+    rejected_count: number
+    avg_turnaround_hours: number
+  }
+}
+
+export interface RefundEligibilityCheck {
+  eligible: boolean
+  reasons: string[]
+  max_refundable_cents: number
+  days_since_invoice: number
+  policy_window_days: number
+}
+
+export interface PlatformFeedbackReport {
+  id: number
+  care_circle_id?: number | null
+  user_id?: number | null
+  type: 'bug' | 'feedback' | 'feature_request'
+  title: string
+  description: string
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  status: 'new' | 'triaged' | 'in_progress' | 'resolved' | 'wont_fix'
+  device_info?: Record<string, unknown> | null
+  admin_notes?: string | null
+  resolved_at?: string | null
+  created_at: string
+  care_circle?: {
+    id: number
+    name: string
+    plan_code: string
+    status: string
+  }
+  user?: {
+    id: number
+    name: string
+    email: string
+  }
+  resolver?: {
+    id: number
+    name: string
+  }
+}
+
+export interface PlatformFeedbackPayload {
+  data: PlatformFeedbackReport[]
+  meta: {
+    current_page: number
+    total: number
+    per_page: number
+    last_page: number
+  }
+  summary: {
+    total: number
+    open: number
+    critical_open: number
+    by_status: Record<string, number>
+    by_type: Record<string, number>
+  }
+}
+
+export interface MarketingOverview {
+  total_leads: number
+  new_leads: number
+  converted_leads: number
+  lead_conversion_rate: number
+  active_promotions: number
+  total_redemptions: number
+  active_announcements: number
+  total_impressions: number
+  total_clicks: number
+  banner_ctr_percent: number
+}
+
+export interface MarketingPromotion {
+  id: number
+  code: string
+  name: string
+  discount_type: 'percent' | 'fixed_cents'
+  discount_value: number
+  plan_restrictions?: string[] | null
+  max_redemptions?: number | null
+  redeemed_count: number
+  expires_at?: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface MarketingAnnouncement {
+  id: number
+  title: string
+  message: string
+  link_url?: string | null
+  badge_text?: string | null
+  theme: 'emerald' | 'amber' | 'rose' | 'sky' | 'indigo'
+  target_plans?: string[] | null
+  is_active: boolean
+  impressions_count: number
+  clicks_count: number
+  starts_at?: string | null
+  ends_at?: string | null
+  created_at: string
+}
+
+export interface MarketingLead {
+  id: number
+  name: string
+  email: string
+  phone?: string | null
+  organization?: string | null
+  estimated_seniors?: number | null
+  notes?: string | null
+  status: 'new' | 'contacted' | 'demo_scheduled' | 'converted' | 'lost'
+  created_at: string
+}
+
+

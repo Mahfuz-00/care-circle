@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/actions/phone_actions.dart';
 import '../../../../core/theme/app_sizes.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/medication_name_text.dart';
 import '../../../../core/widgets/message_banner.dart';
@@ -79,8 +80,10 @@ class MedicationListCard extends StatelessWidget {
               const SizedBox(height: AppSizes.gap),
               Text(
                 'About ${medication.daysRemaining} days of stock left.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: AppTheme.tabular(
+                  theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 softWrap: true,
                 maxLines: null,

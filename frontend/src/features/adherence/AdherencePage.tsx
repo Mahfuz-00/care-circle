@@ -3,7 +3,7 @@ import { useId, useState } from 'react'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { SelectField } from '../../components/ui/Field'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { EmptyState, ErrorState, LoadingState } from '../../components/ui/states'
+import { EmptyState, ErrorState, SkeletonStats } from '../../components/ui/states'
 import { daysAgo, formatNumber, formatPercent, toDateParam } from '../../lib/format'
 import { useSession } from '../auth/useSession'
 import { MemberSelector } from '../care-circle/MemberSelector'
@@ -56,7 +56,7 @@ export function AdherencePage() {
         </CardBody>
       </Card>
 
-      {adherence.isPending ? <LoadingState label="Loading adherence…" /> : null}
+      {adherence.isPending ? <SkeletonStats label="Loading adherence…" /> : null}
 
       {adherence.isError ? (
         <ErrorState
@@ -88,7 +88,7 @@ export function AdherencePage() {
             <>
               <div className="rounded-[var(--radius-card)] border border-sage-300 bg-sage-50 px-5 py-6">
                 <p className="text-sm font-medium uppercase tracking-wide text-sage-700">Confirmed inside the window</p>
-                <p className="mt-1 text-4xl font-semibold text-sage-800">
+                <p className="mt-1 text-4xl font-semibold tabular-nums text-sage-800">
                   {formatPercent(summary.percentage) ?? 'Not returned'}
                 </p>
                 <p className="mt-1 text-sm text-ink-500">
@@ -104,7 +104,7 @@ export function AdherencePage() {
               </dl>
 
               <p className="text-sm text-ink-500">
-                A skipped dose is recorded with its reason and stops further escalation (PRD §7).
+                A skipped dose is recorded with its reason and stops further escalation.
               </p>
             </>
           )}
@@ -125,7 +125,7 @@ function Stat({ label, value, tone }: { label: string; value: string | null; ton
   return (
     <div className={`rounded-[var(--radius-card)] border px-4 py-4 ${tones[tone]}`}>
       <dt className="text-sm font-medium">{label}</dt>
-      <dd className="mt-1 text-2xl font-semibold">{value ?? 'Not returned'}</dd>
+      <dd className="mt-1 text-2xl font-semibold tabular-nums">{value ?? 'Not returned'}</dd>
     </div>
   )
 }

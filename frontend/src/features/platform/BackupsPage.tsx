@@ -1,5 +1,5 @@
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
-import { EmptyState, ErrorState, LoadingState } from '../../components/ui/states'
+import { EmptyState, ErrorState, SkeletonList } from '../../components/ui/states'
 import { formatBytes, formatDateTime } from '../../lib/format'
 import type { BackupEntry } from '../../lib/types'
 import { useBackups } from './hooks'
@@ -27,7 +27,7 @@ export function BackupsPage() {
         description="Restore readiness and the newest verified dump. Backups without a dump tool report “skipped”."
       />
       <CardBody>
-        {backups.isPending ? <LoadingState label="Loading backups…" /> : null}
+        {backups.isPending ? <SkeletonList label="Loading backups…" rows={3} /> : null}
         {backups.isError ? (
           <ErrorState error={backups.error} title="Backups could not be loaded" onRetry={() => void backups.refetch()} />
         ) : null}
@@ -90,7 +90,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div className="flex gap-2">
       <dt className="text-ink-500">{label}:</dt>
-      <dd className="text-ink-900">{children}</dd>
+      <dd className="tabular-nums text-ink-900">{children}</dd>
     </div>
   )
 }

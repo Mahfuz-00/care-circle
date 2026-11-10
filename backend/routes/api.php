@@ -11,11 +11,19 @@ use App\Http\Controllers\Api\V1\EmergencyController;
 use App\Http\Controllers\Api\V1\InvitationController;
 use App\Http\Controllers\Api\V1\MedicationController;
 use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\PlanController;
 use App\Http\Controllers\Api\V1\Platform\AuditLogController;
 use App\Http\Controllers\Api\V1\Platform\BackupController;
+use App\Http\Controllers\Api\V1\Platform\BillingController;
+use App\Http\Controllers\Api\V1\Platform\ClientController;
+use App\Http\Controllers\Api\V1\Platform\EmailSettingController;
 use App\Http\Controllers\Api\V1\Platform\FailedJobController;
+use App\Http\Controllers\Api\V1\Platform\FeedbackController;
 use App\Http\Controllers\Api\V1\Platform\HealthController;
+use App\Http\Controllers\Api\V1\Platform\MarketingController;
 use App\Http\Controllers\Api\V1\Platform\MetricController;
+use App\Http\Controllers\Api\V1\Platform\PaymentSettingController;
+use App\Http\Controllers\Api\V1\Platform\RefundController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +37,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1')->group(function () {
+    /*
+     * Public by design: the plan catalogue the marketing page renders (PRD §8).
+     * It is read from the plans table, so the pricing on the page cannot drift
+     * from the limits this API enforces. It exposes no tenant data.
+     */
+    Route::get('plans', [PlanController::class, 'index']);
+
     // Unauthenticated: minting a token is how you get one.
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
@@ -93,10 +108,65 @@ Route::prefix('v1')->group(function () {
             ->middleware(['abilities:dashboard,platform.admin', 'platform.admin'])
             ->group(function () {
                 Route::get('system-health', [HealthController::class, 'index']);
+                Route::post('system-health/cache/clear', [HealthController::class, 'clearCache']);
                 Route::get('backups', [BackupController::class, 'index']);
+
                 Route::get('failed-jobs', [FailedJobController::class, 'index']);
+                Route::post('failed-jobs/retry-all', [FailedJobController::class, 'retryAll']);
+                Route::post('failed-jobs/{id}/retry', [FailedJobController::class, 'retry']);
+                Route::post('failed-jobs/flush', [FailedJobController::class, 'flush']);
+
                 Route::get('audit-log', [AuditLogController::class, 'index']);
                 Route::get('metrics', [MetricController::class, 'index']);
+
+                // Clients / Households Module
+                Route::get('clients/export', [ClientController::class, 'exportCsv']);
+                Route::post('clients/bulk/suspend', [ClientController::class, 'bulkSuspend']);
+                Route::post('clients/bulk/activate', [ClientController::class, 'bulkActivate']);
+                Route::get('clients', [ClientController::class, 'index']);
+                Route::get('clients/{id}', [ClientController::class, 'show']);
+                Route::patch('clients/{id}', [ClientController::class, 'update']);
+                Route::post('clients/{id}/suspend', [ClientController::class, 'suspend']);
+                Route::post('clients/{id}/activate', [ClientController::class, 'activate']);
+
+                // Invoices & Billing
+                Route::get('billing/invoices', [BillingController::class, 'index']);
+                Route::get('billing/invoices/{id}/download', [BillingController::class, 'downloadHtml']);
+                Route::get('billing/pending-cash', [BillingController::class, 'pendingCash']);
+                Route::post('billing/invoices/{id}/approve-cash', [BillingController::class, 'approveCash']);
+                Route::post('billing/invoices/{id}/reject-cash', [BillingController::class, 'rejectCash']);
+
+                // Payment Gateways
+                Route::get('settings/payment', [PaymentSettingController::class, 'show']);
+                Route::post('settings/payment', [PaymentSettingController::class, 'update']);
+                Route::post('settings/payment/test', [PaymentSettingController::class, 'test']);
+
+                // Email Settings
+                Route::get('settings/email', [EmailSettingController::class, 'show']);
+                Route::post('settings/email', [EmailSettingController::class, 'update']);
+                Route::post('settings/email/test', [EmailSettingController::class, 'test']);
+
+                // Refund Policy & Requests
+                Route::get('refunds', [RefundController::class, 'index']);
+                Route::post('refunds/policy', [RefundController::class, 'updatePolicy']);
+                Route::post('refunds/eligibility', [RefundController::class, 'checkEligibility']);
+                Route::post('refunds/{id}/approve', [RefundController::class, 'approve']);
+                Route::post('refunds/{id}/reject', [RefundController::class, 'reject']);
+
+                // Feedback Triage
+                Route::get('feedback', [FeedbackController::class, 'index']);
+                Route::patch('feedback/{id}', [FeedbackController::class, 'update']);
+
+                // Marketing
+                Route::get('marketing/overview', [MarketingController::class, 'overview']);
+                Route::get('marketing/promotions', [MarketingController::class, 'promotions']);
+                Route::post('marketing/promotions', [MarketingController::class, 'storePromotion']);
+                Route::post('marketing/promotions/{id}/toggle', [MarketingController::class, 'togglePromotion']);
+                Route::get('marketing/announcements', [MarketingController::class, 'announcements']);
+                Route::post('marketing/announcements', [MarketingController::class, 'storeAnnouncement']);
+                Route::post('marketing/announcements/{id}/toggle', [MarketingController::class, 'toggleAnnouncement']);
+                Route::get('marketing/leads', [MarketingController::class, 'leads']);
+                Route::patch('marketing/leads/{id}', [MarketingController::class, 'updateLead']);
             });
     });
 });

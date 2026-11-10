@@ -14,11 +14,11 @@ class AppConfig {
   /// Base host of the API. Override with
   /// `--dart-define=API_BASE_URL=https://api.example.com`.
   ///
-  /// Defaults to `http://10.0.2.2:8000` (the Android emulator's alias for the
-  /// developer machine).
+  /// Defaults to `http://127.0.0.1:8000` with `adb reverse tcp:8000 tcp:8000`
+  /// or Wi-Fi IP for physical devices and emulators.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://127.0.0.1:8000',
   );
 
   /// The only API prefix this app is allowed to reach (PRD §3).

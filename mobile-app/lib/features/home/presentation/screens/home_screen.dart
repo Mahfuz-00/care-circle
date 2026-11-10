@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/accessibility/announcer.dart';
 import '../../../../core/actions/phone_actions.dart';
 import '../../../../core/router/app_router.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_sizes.dart';
 import '../../../../core/utils/date_formatting.dart';
 import '../../../../core/widgets/accessible_button.dart';
+import '../../../../core/widgets/app_logo_widget.dart';
 import '../../../../core/widgets/empty_state_view.dart';
 import '../../../../core/widgets/error_retry_view.dart';
 import '../../../../core/widgets/loading_view.dart';
@@ -84,6 +86,15 @@ class _HomeScreenState extends State<HomeScreen> {
             _announcer.announce(context, state.message!),
         child: Scaffold(
           appBar: AppBar(
+            leading: const Padding(
+              padding: EdgeInsets.only(left: 12),
+              child: Center(
+                child: AppLogoWidget(
+                  size: 36,
+                  showWordmark: false,
+                ),
+              ),
+            ),
             title: Semantics(
               header: true,
               child: Text(_greeting(auth)),
@@ -187,6 +198,92 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+      Row(
+        children: <Widget>[
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Row(
+                    children: <Widget>[
+                      Icon(Icons.medication_outlined, size: 20, color: AppColors.forestTeal),
+                      SizedBox(width: 6),
+                      Text(
+                        'TODAY',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.inkMuted,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${summary.doses.where((d) => d.status == DoseStatus.taken).length} / ${summary.doses.length} Taken',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSizes.gap),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Row(
+                    children: <Widget>[
+                      Icon(Icons.event_available_outlined, size: 20, color: AppColors.deepSage),
+                      SizedBox(width: 6),
+                      Text(
+                        'VISITS',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.inkMuted,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    summary.appointments.isEmpty
+                        ? 'None today'
+                        : '${summary.appointments.length} scheduled',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: AppSizes.gapLarge),
       SectionCard(
         title: 'Medicines due today',
         child: _doses(today, summary),

@@ -104,8 +104,7 @@ async function unwrap<T>(promise: Promise<{ data: Envelope<T> | T }>): Promise<T
   if (body && typeof body === 'object' && 'data' in body) {
     return (body as Envelope<T>).data
   }
-  // Defensive: a 204/empty body must not be mistaken for a rendered value.
-  return undefined as unknown as T
+  return body as unknown as T
 }
 
 export type QueryParams = Record<string, string | number | boolean | undefined | null>

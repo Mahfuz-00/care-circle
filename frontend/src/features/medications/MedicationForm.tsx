@@ -219,7 +219,7 @@ export function MedicationForm({
         <CheckboxField
           id={`${baseId}-high-priority`}
           label="High priority (escalation is allowed for this medication)"
-          hint="Escalation is still server-enforced and never runs inside quiet hours (PRD §7)."
+          hint="Escalation is still server-enforced and never runs inside quiet hours."
           checked={form.is_high_priority}
           onChange={(event) => update('is_high_priority', event.target.checked)}
         />

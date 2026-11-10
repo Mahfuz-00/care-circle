@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_sizes.dart';
 
 /// The emergency button (PRD §5.5, PRD §13).
@@ -38,43 +39,79 @@ class EmergencyHelpButton extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           height: AppSizes.emergencyButtonHeight,
-          child: FilledButton(
-            onPressed: enabled ? onPressed : null,
-            style: FilledButton.styleFrom(
-              backgroundColor: theme.colorScheme.error,
-              foregroundColor: theme.colorScheme.onError,
-              disabledBackgroundColor: theme.colorScheme.error.withValues(alpha: 0.6),
-              disabledForegroundColor: theme.colorScheme.onError,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSizes.radius),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: enabled
+                    ? const <Color>[AppColors.alert, AppColors.alertStrong]
+                    : <Color>[
+                        AppColors.alert.withValues(alpha: 0.6),
+                        AppColors.alertStrong.withValues(alpha: 0.6),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              textStyle: theme.textTheme.titleLarge,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              borderRadius: BorderRadius.circular(AppSizes.radius),
+              boxShadow: enabled
+                  ? const <BoxShadow>[
+                      BoxShadow(
+                        color: Color(0x38DC2626),
+                        blurRadius: 14,
+                        offset: Offset(0, 5),
+                      ),
+                    ]
+                  : null,
             ),
-            child: busy
-                ? const SizedBox.square(
-                    dimension: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 4,
-                      color: Colors.white,
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Icon(Icons.emergency, size: 34, color: theme.colorScheme.onError),
-                      const SizedBox(width: AppSizes.gap),
-                      Flexible(
-                        child: Text(
-                          label,
-                          softWrap: true,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: theme.colorScheme.onError,
+            child: FilledButton(
+              onPressed: enabled ? onPressed : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.transparent,
+                disabledForegroundColor: Colors.white70,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radius),
+                ),
+                textStyle: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: busy
+                  ? const SizedBox.square(
+                      dimension: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 4,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.emergency, size: 28, color: Colors.white),
+                        ),
+                        const SizedBox(width: AppSizes.gap),
+                        Flexible(
+                          child: Text(
+                            label,
+                            softWrap: true,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),

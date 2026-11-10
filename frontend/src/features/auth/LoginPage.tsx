@@ -4,6 +4,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../../components/ui/Button'
 import { TextField } from '../../components/ui/Field'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { AppLogo } from '../../components/ui/AppLogo'
 import { ErrorState } from '../../components/ui/states'
 import { toApiError } from '../../lib/api'
 import type { ApiError } from '../../lib/api'
@@ -22,8 +23,12 @@ export function LoginPage() {
     login.mutate(
       { email: email.trim(), password },
       {
-        onSuccess: () => {
-          void navigate({ to: '/' })
+        onSuccess: (session) => {
+          if (session?.user?.is_platform_admin) {
+            void navigate({ to: '/platform' })
+          } else {
+            void navigate({ to: '/dashboard' })
+          }
         },
       },
     )
@@ -31,7 +36,9 @@ export function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-5 py-10">
-      <p className="text-sm font-semibold uppercase tracking-wide text-sage-600">CareCircle</p>
+      <Link to="/" className="mb-6 inline-block">
+        <AppLogo size="lg" subtitle="Quiet Vigilance for Loved Ones" animated />
+      </Link>
       <PageHeader
         title="Sign in"
         description="Coordinate medication schedules, appointments and care-circle alerts. CareCircle reminds and coordinates — it does not give medical advice."

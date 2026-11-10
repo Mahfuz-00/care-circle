@@ -25,6 +25,7 @@ export const queryClient = new QueryClient({
 /** Query key factory — keeps invalidation honest and greppable. */
 export const queryKeys = {
   me: ['auth', 'me'] as const,
+  plans: ['plans'] as const,
   careCircles: ['care-circles'] as const,
   careCircle: (id: number) => ['care-circles', id] as const,
   members: (careCircleId: number) => ['care-circles', careCircleId, 'members'] as const,
@@ -42,5 +43,18 @@ export const queryKeys = {
     auditLog: (careCircleId?: number | null) =>
       ['platform', 'audit-log', careCircleId ?? 'all'] as const,
     metrics: ['platform', 'metrics'] as const,
+    clients: (search?: string, plan?: string) =>
+      ['platform', 'clients', { search: search ?? '', plan: plan ?? '' }] as const,
+    client: (id: number) => ['platform', 'clients', id] as const,
+    billing: (params?: unknown) => ['platform', 'billing', params] as const,
+    pendingCash: ['platform', 'billing', 'pending-cash'] as const,
+    paymentSettings: ['platform', 'payment-settings'] as const,
+    emailSettings: ['platform', 'email-settings'] as const,
+    refunds: (params?: unknown) => ['platform', 'refunds', params] as const,
+    feedback: (params?: unknown) => ['platform', 'feedback', params] as const,
+    marketing: ['platform', 'marketing', 'overview'] as const,
+    promotions: (status?: string) => ['platform', 'marketing', 'promotions', status ?? 'all'] as const,
+    announcements: ['platform', 'marketing', 'announcements'] as const,
+    leads: (status?: string) => ['platform', 'marketing', 'leads', status ?? 'all'] as const,
   },
 }

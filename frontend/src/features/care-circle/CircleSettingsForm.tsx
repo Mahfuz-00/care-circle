@@ -53,7 +53,7 @@ export function CircleSettingsForm({ circle }: { circle: CareCircle }) {
     <Card>
       <CardHeader
         title="Care circle settings"
-        description="Quiet hours are never bypassed by escalation, however high the priority (PRD §7)."
+        description="Quiet hours are never bypassed by escalation, however high the priority."
       />
       <CardBody>
         <form onSubmit={submit} className="space-y-4" noValidate>

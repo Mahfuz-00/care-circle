@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 
 import { Button } from '../../components/ui/Button'
 import { SelectField, TextField } from '../../components/ui/Field'
 import { PageHeader } from '../../components/ui/PageHeader'
+import { AppLogo } from '../../components/ui/AppLogo'
 import { ErrorState } from '../../components/ui/states'
 import { toApiError } from '../../lib/api'
 import type { Role } from '../../lib/types'
@@ -24,6 +25,7 @@ function browserTimezone(): string {
 export function RegisterPage() {
   const navigate = useNavigate()
   const register = useRegister()
+  const search = useSearch({ strict: false }) as { plan?: string }
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -39,7 +41,7 @@ export function RegisterPage() {
       { name: name.trim(), email: email.trim(), password, role, timezone },
       {
         onSuccess: () => {
-          void navigate({ to: '/' })
+          void navigate({ to: '/dashboard' })
         },
       },
     )
@@ -47,11 +49,25 @@ export function RegisterPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 py-10">
-      <p className="text-sm font-semibold uppercase tracking-wide text-sage-600">CareCircle</p>
+      <Link to="/" className="mb-6 inline-block">
+        <AppLogo size="lg" subtitle="Quiet Vigilance for Loved Ones" animated />
+      </Link>
       <PageHeader
         title="Create your account"
         description="Pick the role that describes you. Roles decide who can see and change what inside a care circle."
       />
+
+      {search?.plan && (
+        <div className="mb-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-semibold text-teal-800 flex items-center justify-between">
+          <span>
+            Selected Plan:{' '}
+            <strong className="uppercase font-extrabold">{search.plan.replace(/_/g, ' ')}</strong>
+          </span>
+          <span className="text-[10px] bg-teal-200/70 px-2 py-0.5 rounded-full font-bold">
+            30-Day Guarantee
+          </span>
+        </div>
+      )}
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         {error ? <ErrorState error={error} title="We could not create the account" /> : null}

@@ -51,13 +51,13 @@ export function MedicationCard({ medication }: { medication: Medication }) {
       <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm text-ink-700 sm:grid-cols-2">
         <div className="flex gap-2">
           <dt className="text-ink-500">Stock on hand:</dt>
-          <dd>
+          <dd className="tabular-nums">
             {stock !== null ? `${stock} units` : <span className="italic text-ink-500">Not returned by the API</span>}
           </dd>
         </div>
         <div className="flex gap-2">
           <dt className="text-ink-500">Days remaining:</dt>
-          <dd>
+          <dd className="tabular-nums">
             {daysRemaining !== null ? (
               `${daysRemaining} days`
             ) : (
@@ -67,11 +67,11 @@ export function MedicationCard({ medication }: { medication: Medication }) {
         </div>
         <div className="flex gap-2">
           <dt className="text-ink-500">Units per dose:</dt>
-          <dd>{formatNumber(medication.units_per_dose)}</dd>
+          <dd className="tabular-nums">{formatNumber(medication.units_per_dose)}</dd>
         </div>
         <div className="flex gap-2">
           <dt className="text-ink-500">Low-stock threshold:</dt>
-          <dd>{threshold !== null ? `${threshold} units` : <span className="italic text-ink-500">Not set</span>}</dd>
+          <dd className="tabular-nums">{threshold !== null ? `${threshold} units` : <span className="italic text-ink-500">Not set</span>}</dd>
         </div>
       </dl>
 

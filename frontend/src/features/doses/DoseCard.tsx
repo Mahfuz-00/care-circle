@@ -77,19 +77,22 @@ export function DoseCard({ dose }: { dose: Dose }) {
 
   return (
     <article
-      className="rounded-[var(--radius-card)] border border-cream-300 bg-white px-4 py-4"
+      className="rounded-xl border border-cream-300 bg-white p-3.5 shadow-2xs hover:border-cream-400 transition-all"
       aria-labelledby={`dose-${dose.id}-name`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 id={`dose-${dose.id}-name`} className="text-lg font-semibold text-ink-900">
+          <h3 id={`dose-${dose.id}-name`} className="text-base font-bold text-ink-950">
             {dose.medication.name}
           </h3>
-          <p className="text-base text-ink-500">{dose.medication.dosage}</p>
-          <p className="mt-1 text-sm text-ink-500">
+          <p className="text-xs font-semibold text-teal-800">{dose.medication.dosage}</p>
+          <p className="mt-1 text-xs text-ink-600 font-mono">
             {scheduledTime ? (
               <>
-                Scheduled for <time dateTime={dose.scheduled_for}>{scheduledTime}</time>
+                Scheduled for{' '}
+                <time dateTime={dose.scheduled_for} className="tabular-nums font-bold">
+                  {scheduledTime}
+                </time>
               </>
             ) : (
               'Scheduled time not returned by the API'
@@ -97,7 +100,10 @@ export function DoseCard({ dose }: { dose: Dose }) {
             {dose.taken_at && takenAt ? (
               <>
                 {' · '}
-                Taken at <time dateTime={dose.taken_at}>{takenAt}</time>
+                Taken at{' '}
+                <time dateTime={dose.taken_at} className="tabular-nums font-bold text-teal-700">
+                  {takenAt}
+                </time>
                 {dose.marked_by?.name ? `, recorded by ${dose.marked_by.name}` : ''}
               </>
             ) : null}
@@ -108,12 +114,13 @@ export function DoseCard({ dose }: { dose: Dose }) {
       </div>
 
       {capabilities.markDoses && isActionable(dose) ? (
-        <div className="mt-4">
+        <div className="mt-3 pt-2.5 border-t border-cream-200">
           <div className="flex flex-wrap gap-2">
-            <Button size="lg" loading={take.isPending} disabled={busy} onClick={recordTaken}>
+            <Button size="sm" loading={take.isPending} disabled={busy} onClick={recordTaken}>
               I took it
             </Button>
             <Button
+              size="sm"
               variant="secondary"
               disabled={busy}
               aria-expanded={panel === 'skip'}
@@ -122,6 +129,7 @@ export function DoseCard({ dose }: { dose: Dose }) {
               Skip dose
             </Button>
             <Button
+              size="sm"
               variant="secondary"
               disabled={busy}
               aria-expanded={panel === 'snooze'}
@@ -136,7 +144,7 @@ export function DoseCard({ dose }: { dose: Dose }) {
               <TextAreaField
                 id={reasonId}
                 label="Why is this dose being skipped?"
-                hint="Recorded with the dose so the care circle can see the reason (PRD §7)."
+                hint="Recorded with the dose so the care circle can see the reason."
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
               />

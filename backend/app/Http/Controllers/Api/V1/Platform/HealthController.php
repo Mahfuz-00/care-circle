@@ -23,4 +23,13 @@ class HealthController extends Controller
 
         return response()->json(['data' => SystemCheckResource::collection($checks)]);
     }
+
+    public function clearCache(): JsonResponse
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+
+        return response()->json([
+            'message' => 'Application cache flushed successfully.',
+        ]);
+    }
 }

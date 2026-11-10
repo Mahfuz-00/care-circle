@@ -5,7 +5,7 @@ import { buttonClasses } from '../../components/ui/buttonStyles'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import { SelectField } from '../../components/ui/Field'
 import { PageHeader } from '../../components/ui/PageHeader'
-import { EmptyState, ErrorState, LoadingState } from '../../components/ui/states'
+import { EmptyState, ErrorState, SkeletonList } from '../../components/ui/states'
 import { useSession } from '../auth/useSession'
 import { MedicationCard } from './MedicationCard'
 import { useMedications } from './hooks'
@@ -38,7 +38,7 @@ export function MedicationsPage() {
     <div>
       <PageHeader
         title="Medications"
-        description="Schedules, stock levels and the pharmacy on file. A caregiver’s view of a senior’s medications cannot be hidden from the circle (PRD §7)."
+        description="Schedules, stock levels and the pharmacy on file. A caregiver’s view of a senior’s medications cannot be hidden from the circle."
         actions={
           mayCreate ? (
             <Link to="/medications/new" className={buttonClasses('primary', 'lg')}>
@@ -74,7 +74,7 @@ export function MedicationsPage() {
         </CardBody>
       </Card>
 
-      {medications.isPending ? <LoadingState label="Loading medications…" /> : null}
+      {medications.isPending ? <SkeletonList label="Loading medications…" rows={3} /> : null}
 
       {medications.isError ? (
         <ErrorState

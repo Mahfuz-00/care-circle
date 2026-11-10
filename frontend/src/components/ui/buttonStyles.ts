@@ -5,7 +5,7 @@
  * Every size clears the 44px minimum touch target (§9 accessibility).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'emergency' | 'alert'
-export type ButtonSize = 'md' | 'lg'
+export type ButtonSize = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-sage-600 text-cream-50 border border-sage-700 hover:bg-sage-700',
@@ -18,6 +18,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
 }
 
 const SIZES: Record<ButtonSize, string> = {
+  sm: 'min-h-9 px-3 py-1.5 text-sm gap-1.5',
   md: 'min-h-11 px-4 py-2 text-base gap-2',
   lg: 'min-h-14 px-6 py-3 text-lg gap-2.5',
 }

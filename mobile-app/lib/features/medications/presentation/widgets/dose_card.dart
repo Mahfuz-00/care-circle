@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_sizes.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/date_formatting.dart';
 import '../../../../core/widgets/accessible_button.dart';
 import '../../../../core/widgets/medication_name_text.dart';
@@ -36,8 +38,15 @@ class DoseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final bool overdue = dose.isOverdue(now ?? DateTime.now());
+    final BorderSide cardBorder = overdue
+        ? const BorderSide(color: AppColors.alert, width: 1.5)
+        : const BorderSide(color: AppColors.border, width: 1);
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.radius),
+        side: cardBorder,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.gapLarge),
         child: Column(
@@ -74,15 +83,17 @@ class DoseCard extends StatelessWidget {
                       overdue
                           ? 'Was due at ${DateFormatting.time(dose.scheduledFor)}'
                           : 'Due at ${DateFormatting.time(dose.scheduledFor)}',
-                      style: theme.textTheme.bodyLarge,
+                      style: AppTheme.tabular(theme.textTheme.bodyLarge),
                       softWrap: true,
                       maxLines: null,
                     ),
                     if (dose.takenAt != null)
                       Text(
                         'Taken at ${DateFormatting.time(dose.takenAt!)}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.primary,
+                        style: AppTheme.tabular(
+                          theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
                         ),
                         softWrap: true,
                       ),
@@ -186,33 +197,40 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final (Color background, Color foreground) = switch (dose.status) {
+    final (Color background, Color foreground, Color border) = switch (dose.status) {
       DoseStatus.taken => (
-          theme.colorScheme.primaryContainer,
-          theme.colorScheme.onPrimaryContainer,
+          AppColors.okTint,
+          const Color(0xFF15803D),
+          const Color(0xFFBBF7D0),
         ),
       DoseStatus.skipped || DoseStatus.missed => (
-          theme.colorScheme.surfaceContainerHighest,
-          theme.colorScheme.onSurfaceVariant,
+          AppColors.creamSunken,
+          AppColors.inkMuted,
+          AppColors.border,
         ),
       DoseStatus.snoozed => (
-          theme.colorScheme.secondaryContainer,
-          theme.colorScheme.onSecondaryContainer,
+          AppColors.warningTint,
+          const Color(0xFFB45309),
+          const Color(0xFFFDE68A),
         ),
       DoseStatus.pending => overdue
-          ? (theme.colorScheme.error, theme.colorScheme.onError)
-          : (theme.colorScheme.secondaryContainer, theme.colorScheme.onSecondaryContainer),
+          ? (AppColors.alertTint, AppColors.alertStrong, const Color(0xFFFECACA))
+          : (AppColors.tealTint, AppColors.forestTealStrong, const Color(0xFFBAE6FD)),
     };
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: border),
       ),
       child: Text(
         overdue && dose.status == DoseStatus.pending ? 'Overdue' : dose.status.label,
-        style: theme.textTheme.labelMedium?.copyWith(color: foreground),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w700,
+        ),
         softWrap: true,
       ),
     );

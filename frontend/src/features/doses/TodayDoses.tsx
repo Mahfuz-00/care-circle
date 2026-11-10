@@ -36,7 +36,7 @@ export function TodayDoses({
         }
       />
 
-      <div className="space-y-3 px-4 py-4 sm:px-5">
+      <div className="space-y-2.5 p-3.5 sm:p-4">
         {doses.isPending ? <LoadingState label="Loading today’s doses…" /> : null}
 
         {doses.isError ? (

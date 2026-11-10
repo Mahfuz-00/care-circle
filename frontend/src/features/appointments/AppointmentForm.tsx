@@ -130,7 +130,7 @@ export function AppointmentForm({
       <CheckboxField
         id={`${baseId}-shared`}
         label="Share with the care circle"
-        hint="Unshared appointments stay visible only to your account (PRD §5.4)."
+        hint="Unshared appointments stay visible only to your account."
         checked={form.shared_with_circle}
         onChange={(event) => update('shared_with_circle', event.target.checked)}
       />

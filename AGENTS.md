@@ -40,6 +40,9 @@ section before changing behavior, and treat it as the contract.
   source. Always-visible focus states and semantic landmarks.
 - Mobile: `features/<feature>/{data,domain,presentation}`; the domain layer imports no Flutter/dio.
   Minimum 48dp targets, respect OS text scale, never truncate medication names.
+- Design: `docs/DESIGN-PRINCIPLES.md` is the working doctrine — one design system across three
+  workspaces, status in words rather than colour, tabular figures for numeric values, every data
+  region handling all five states, and nothing reported that was not measured.
 - Verify before claiming done: `php artisan test` + Pint (backend), `npm run build` + lint
   (frontend), `flutter analyze` + `flutter test` (mobile). Report failures honestly.
 
